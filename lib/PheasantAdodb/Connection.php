@@ -229,11 +229,7 @@ class Connection {
       $phtable = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
       if ($keyexists)
       {
-        $update_fields = $fieldArray;
-        foreach ($keys as $key)
-          unset($update_fields[$key]);
-
-        $this->_lastResult = $phtable->update($update_fields, $criteria);
+        $this->_lastResult = $phtable->update($fieldArray, $criteria);
         return 1;
       }
       else

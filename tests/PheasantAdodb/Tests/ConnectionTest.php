@@ -169,6 +169,20 @@ class ConnectionTest extends PheasantAdodbTestCase
     $ado_result = $this->ado_connection->Replace('user', array('userid' => 101, 'firstname' => $newfirstname), 'userid', true);
     $pha_result = $this->pha_connection->Replace('user', array('userid' => 101, 'firstname' => $newfirstname), 'userid', true);
     $this->assertEquals($ado_result, $pha_result);
+
+
+    // multiple keys
+    //failing due to bug in Pheasant https://github.com/lox/pheasant/pull/11
+    /*
+    $ado_result = $this->ado_connection->Replace('user', array('userid' => 101, 'firstname' => $newfirstname, 'lastname' => 'newlastname'), array('userid','firstname'), true);
+    $pha_result = $this->pha_connection->Replace('user', array('userid' => 101, 'firstname' => $newfirstname, 'lastname' => 'newlastname'), array('userid','firstname'), true);
+    $this->assertEquals($ado_result, $pha_result);
+
+    $sql = "SELECT * FROM user WHERE userid = 101";
+    $ado_result = $this->ado_connection->GetAll($sql);
+    $pha_result = $this->pha_connection->GetAll($sql);
+    $this->assertEquals($ado_result, $pha_result);
+    */
   }
 
   public function testQuote()
