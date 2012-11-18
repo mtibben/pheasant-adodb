@@ -1,0 +1,36 @@
+{
+  "name": "99designs/pheasant-adodb",
+  "description": "A subset of the ADOdb API on Pheasant",
+  "keywords": ["datamapper", "orm", "activerecord", "mysql", "99designs", "adodb"],
+  "license": "MIT",
+  "authors": [
+    { "name": "Michael Tibben", "email": "michael.tibben@gmail.com" }
+  ],
+  "repositories": [
+    {
+      "type": "package",
+      "package": {
+        "name": "adodb/adodb",
+        "version": "4.81",
+        "dist": {
+            "url": "http://downloads.sourceforge.net/project/adodb/adodb-php-4-and-5/adodb-481-for-php/adodb481.zip?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fadodb%2Ffiles%2Fadodb-php-4-and-5%2Fadodb-481-for-php%2F&ts=1353210031&use_mirror=aarnet",
+            "type": "zip"
+        },
+        "autoload" : {
+          "files" : ["adodb.inc.php"]
+        }
+      }
+    }
+  ],
+  "require": {
+    "php": ">=5.3.2",
+    "lox/pheasant": "dev-master"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "3.7.*",
+    "adodb/adodb": "4.81"
+  },
+  "autoload": {
+    "psr-0": { "PheasantAdodb": ["lib", "tests"] }
+  }
+}
