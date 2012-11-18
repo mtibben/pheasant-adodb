@@ -4,8 +4,6 @@ namespace PheasantAdodb;
 
 class RecordSet implements \Iterator
 {
-  public $databaseType = "pheasant";
-  public $canSeek = true;
   public $fields = array();
   public $EOF = true;
 
@@ -204,34 +202,16 @@ class RecordSet implements \Iterator
       if ($this->_numOfRows != -1)
         $rowNumber = $this->_numOfRows-2;
 
-    if ($this->canSeek)
+    if ($this->_seek($rowNumber))
     {
-      if ($this->_seek($rowNumber))
-      {
-        $this->_currentRow = $rowNumber;
-        if ($this->_fetch())
-          return true;
-      }
-      else
-      {
-        $this->EOF = true;
-        return false;
-      }
+      $this->_currentRow = $rowNumber;
+      if ($this->_fetch())
+        return true;
     }
     else
     {
-      if ($rowNumber < $this->_currentRow)
-        return false;
-
-      while (! $this->EOF && $this->_currentRow < $rowNumber)
-      {
-        $this->_currentRow++;
-
-        if (!$this->_fetch())
-          $this->EOF = true;
-      }
-
-      return !($this->EOF);
+      $this->EOF = true;
+      return false;
     }
 
     $this->fields = false;
