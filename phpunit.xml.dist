@@ -12,4 +12,20 @@
     </testsuite>
   </testsuites>
 
+  <!-- Filters for code coverage reporting -->
+  <filter>
+    <whitelist>
+      <directory>./</directory>
+      <exclude>
+        <directory>./tests</directory>
+        <directory>./vendor</directory>
+      </exclude>
+    </whitelist>
+  </filter>
+
+  <!-- Logging -->
+  <logging>
+    <log type="coverage-text" target="php://stdout" />
+  </logging>
+
 </phpunit>

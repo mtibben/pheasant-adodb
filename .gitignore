@@ -1,4 +1,4 @@
 .DS_Store
 /vendor/
 .tags*
-
+/tests/coverage/
