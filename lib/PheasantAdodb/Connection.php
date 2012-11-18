@@ -3,8 +3,6 @@
 namespace PheasantAdodb;
 
 class Connection {
-  const ADODB_TABLE_REGEX = '([]0-9a-z_\:\"\`\.\@\[-]*)';
-
   public $dataProvider = 'mysql';
   public $replaceQuote = "\\'";
 
