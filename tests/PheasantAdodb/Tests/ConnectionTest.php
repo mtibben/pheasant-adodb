@@ -238,6 +238,50 @@ class ConnectionTest extends PheasantAdodbTestCase
     $ado_result = $this->ado_connection->AutoExecute('user', $data, 'UPDATE', $where);
     $pha_result = $this->pha_connection->AutoExecute('user', $data, 'UPDATE', $where);
     $this->assertEquals($ado_result, $pha_result);
+  }
 
+  public function testTransaction()
+  {
+    $this->ado_connection->StartTrans();
+    $this->pha_connection->StartTrans();
+
+    $data = array('firstname'=>'testTransaction','lastname'=>'testTransaction');
+    $ado_result = $this->ado_connection->AutoExecute('user', $data, 'INSERT');
+    $pha_result = $this->pha_connection->AutoExecute('user', $data, 'INSERT');
+    $this->assertEquals($ado_result, $pha_result);
+
+    $ado_result = $this->ado_connection->Replace('user', array('firstname' => 'testTransaction', 'lastname' => 'new last name'), 'firstname', true);
+    $pha_result = $this->pha_connection->Replace('user', array('firstname' => 'testTransaction', 'lastname' => 'new last name'), 'firstname', true);
+    $this->assertEquals($ado_result, $pha_result);
+
+    $ado_result = $this->ado_connection->CompleteTrans();
+    $pha_result = $this->pha_connection->CompleteTrans();
+    $this->assertEquals($ado_result, $pha_result);
+  }
+
+  public function testTransactionRollback()
+  {
+    // ADOdb is flipping out with PHP 5.3.10, can't compare results
+
+    #$this->ado_connection->StartTrans();
+    $this->pha_connection->StartTrans();
+
+    $data = array('firstname'=>'testTransactionRollback','lastname'=>'testTransactionRollback');
+    #$ado_result = $this->ado_connection->AutoExecute('user', $data, 'INSERT');
+    $pha_result = $this->pha_connection->AutoExecute('user', $data, 'INSERT');
+    #$this->assertEquals($ado_result, $pha_result);
+
+    #$ado_result = $this->ado_connection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
+    $pha_result = $this->pha_connection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
+    #$this->assertEquals($ado_result, $pha_result);
+    $this->assertFalse($pha_result);
+
+    $pha_result = $this->pha_connection->HasFailedTrans();
+    $this->assertTrue(true, $pha_result);
+
+    #$ado_result = $this->ado_connection->CompleteTrans();
+    $pha_result = $this->pha_connection->CompleteTrans();
+    #$this->assertEquals($ado_result, $pha_result);
+    $this->assertFalse($pha_result);
   }
 }

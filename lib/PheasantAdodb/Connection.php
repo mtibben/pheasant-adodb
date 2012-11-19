@@ -3,13 +3,15 @@
 namespace PheasantAdodb;
 
 class Connection {
+  public $databaseType = 'pheasant-adodb';
   public $dataProvider = 'mysql';
   public $replaceQuote = "\\'";
+  public $raiseErrorFn = false;
 
-  private $transOff = 0;
-  private $transCnt = 0;
-  private $_oldRaiseFn =  false;
-  private $_transOK = null;
+  public $transOff = 0;
+  public $transCnt = 0;
+  public $_oldRaiseFn =  false;
+  public $_transOK = null;
 
   private $_connection;
 
@@ -17,6 +19,7 @@ class Connection {
   private $_lastSql;
   private $_errorMsg;
   private $_errorNo;
+
 
   public function __construct(\Pheasant\Database\Mysqli\Connection $connection)
   {
@@ -210,7 +213,7 @@ class Connection {
     foreach($keyCol as $key)
     {
       if (!array_key_exists($key, $fieldArray))
-        throw new Exception("Key $key doesn't exist in fieldArray");
+        throw new \Exception("Key $key doesn't exist in fieldArray");
       $keys[$key] = $fieldArray[$key];
     }
 
@@ -239,6 +242,8 @@ class Connection {
       $this->_errorMsg = $e->getMessage();
       $this->_errorNo = $e->getCode();
     }
+
+    $this->handleError('REPLACE');
 
     return 0;
   }
@@ -279,6 +284,8 @@ class Connection {
     {
       $this->_errorMsg = $e->getMessage();
       $this->_errorNo = $e->getCode();
+      $this->handleError('AUTOEXECUTE');
+
       return false;
     }
 
@@ -292,8 +299,30 @@ class Connection {
   }
 
 
+  public function handleError($functionName)
+  {
+    if(is_callable(array($this, $this->raiseErrorFn)))
+    {
+      call_user_func(array($this, $this->raiseErrorFn), $this->databaseType, $functionName, $this->ErrorNo(), $this->ErrorMsg(), '', '');
+    }
+    else if (is_callable($this->raiseErrorFn))
+    {
+      call_user_func($this->raiseErrorFn, $this->databaseType, $functionName, $this->ErrorNo(), $this->ErrorMsg(), '', '', $this);
+    }
+  }
+
+
   // --------------------------------------
   // Transaction methods
+
+  public function ADODB_TransMonitor($dbms, $fn, $errno, $errmsg, $p1, $p2)
+  {
+    $this->_transOK = false;
+    if ($this->_oldRaiseFn) {
+      $fn = $this->_oldRaiseFn;
+      call_user_func($fn, $dbms, $fn, $errno, $errmsg, $p1, $p2, $this);
+    }
+  }
 
   /**
     Improved method of initiating a transaction. Used together with CompleteTrans().
@@ -423,6 +452,7 @@ class Connection {
     {
       $this->_errorMsg = $e->getMessage();
       $this->_errorNo = $e->getCode();
+      $this->handleError('EXECUTE');
 
       return false;
     }
