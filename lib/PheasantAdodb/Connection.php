@@ -6,7 +6,7 @@ class Connection {
   public $databaseType = 'pheasant-adodb';
   public $dataProvider = 'mysql';
   public $replaceQuote = "\\'";
-  public $raiseErrorFn = false;
+  public $raiseErrorFn = 'adodb_throw';
 
   public $transOff = 0;
   public $transCnt = 0;
@@ -238,12 +238,12 @@ class Connection {
         return 2;
       }
     }
-    catch(\Pheasant\Database\Exception $e) {
+    catch(\Exception $e) {
       $this->_errorMsg = $e->getMessage();
       $this->_errorNo = $e->getCode();
     }
 
-    $this->handleError('REPLACE');
+    $this->_handleError('REPLACE');
 
     return 0;
   }
@@ -259,10 +259,10 @@ class Connection {
     elseif ($mode == 'INSERT' || $mode == 1)
       $mode = 'INSERT';
     else
-      throw new BadMethodCallException("AutoExecute: Unknown mode=$mode");
+      throw new \BadMethodCallException("AutoExecute: Unknown mode=$mode");
 
     if ($mode == 'UPDATE' && !$where)
-      throw new BadMethodCallException('AutoExecute: Illegal mode=UPDATE with empty WHERE clause');
+      throw new \BadMethodCallException('AutoExecute: Illegal mode=UPDATE with empty WHERE clause');
 
     $table = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
     if (!$table->exists())
@@ -280,11 +280,11 @@ class Connection {
         $this->_lastResult = $table->update($fields_values, $criteria);
       }
     }
-    catch(\Pheasant\Database\Exception $e)
+    catch(\Exception $e)
     {
       $this->_errorMsg = $e->getMessage();
       $this->_errorNo = $e->getCode();
-      $this->handleError('AUTOEXECUTE');
+      $this->_handleError('AUTOEXECUTE');
 
       return false;
     }
@@ -298,31 +298,40 @@ class Connection {
     $this->_connection->close();
   }
 
-
-  public function handleError($functionName)
+  private function adodb_throw($dbms, $fn, $errno, $errmsg, $p1, $p2)
   {
-    if(is_callable(array($this, $this->raiseErrorFn)))
-    {
-      call_user_func(array($this, $this->raiseErrorFn), $this->databaseType, $functionName, $this->ErrorNo(), $this->ErrorMsg(), '', '');
-    }
-    else if (is_callable($this->raiseErrorFn))
-    {
-      call_user_func($this->raiseErrorFn, $this->databaseType, $functionName, $this->ErrorNo(), $this->ErrorMsg(), '', '', $this);
-    }
+    throw new Exception($dbms, $fn, $errno, $errmsg, $p1, $p2);
   }
 
+  private function _findCallableFn($fnName)
+  {
+    if(is_callable(array($this, $fnName)))
+      return array($this, $fnName);
+    else if (is_callable($fnName))
+      return $fnName;
+    else
+      return false;
+  }
+
+  private function _handleError($functionName)
+  {
+    $callable = $this->_findCallableFn($this->raiseErrorFn);
+    if ($callable)
+      call_user_func($callable, $this->databaseType, $functionName, $this->ErrorNo(), $this->ErrorMsg(), '', '');
+  }
 
   // --------------------------------------
   // Transaction methods
 
-  public function ADODB_TransMonitor($dbms, $fn, $errno, $errmsg, $p1, $p2)
+  public function ADODB_TransMonitor($dbms, $functionName, $errno, $errmsg, $p1, $p2)
   {
     $this->_transOK = false;
-    if ($this->_oldRaiseFn) {
-      $fn = $this->_oldRaiseFn;
-      call_user_func($fn, $dbms, $fn, $errno, $errmsg, $p1, $p2, $this);
-    }
+
+    $callable = $this->_findCallableFn($this->_oldRaiseFn);
+    if ($callable)
+      call_user_func($callable, $this->databaseType, $functionName, $errno, $errmsg, $p1, $p2);
   }
+
 
   /**
     Improved method of initiating a transaction. Used together with CompleteTrans().
@@ -392,7 +401,8 @@ class Connection {
   */
   public function HasFailedTrans()
   {
-    if ($this->transOff > 0) return $this->_transOK == false;
+    if ($this->transOff > 0)
+      return $this->_transOK == false;
     return false;
   }
 
@@ -448,11 +458,11 @@ class Connection {
       $this->_lastSql = $sql;
       return $this->_lastResult = $this->_connection->execute($sql, $inputarr);
     }
-    catch(\Pheasant\Database\Exception $e)
+    catch(\Exception $e)
     {
       $this->_errorMsg = $e->getMessage();
       $this->_errorNo = $e->getCode();
-      $this->handleError('EXECUTE');
+      $this->_handleError('EXECUTE');
 
       return false;
     }
@@ -479,10 +489,10 @@ class Connection {
   public function MetaTables($ttype=false, $showSchema=false, $mask=false)
   {
     if($showSchema)
-      throw new BadMethodCallException('$showSchema not implemented for MetaTables');
+      throw new \BadMethodCallException('$showSchema not implemented for MetaTables');
 
     if($mask)
-      throw new BadMethodCallException('$mask not implemented for MetaTables');
+      throw new \BadMethodCallException('$mask not implemented for MetaTables');
 
     return $ttype == 'VIEWS'
       ? $this->GetCol('SHOW VIEWS')

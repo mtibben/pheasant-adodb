@@ -23,9 +23,9 @@
     </whitelist>
   </filter>
 
-  <!-- Logging -->
+  <!-- Logging
   <logging>
     <log type="coverage-text" target="php://stdout" />
   </logging>
-
+ -->
 </phpunit>

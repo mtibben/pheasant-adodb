@@ -38,14 +38,22 @@ class ConnectionTest extends PheasantAdodbTestCase
     $this->assertEquals($ado_row, $pa_row);
   }
 
-  public function testError()
+  public function testError1()
   {
     $sql = "SELECT badfield FROM nonexistant";
 
+    $this->setExpectedException('ADODB_Exception');
     $ado_result = $this->ado_connection->Execute($sql);
-    $pha_result = $this->pha_connection->Execute($sql);
-    $this->assertEquals($ado_result, $pha_result);
+  }
+  public function testError2()
+  {
+    $sql = "SELECT badfield FROM nonexistant";
 
+    $this->setExpectedException('\PheasantAdodb\Exception');
+    $pha_result = $this->pha_connection->Execute($sql);
+  }
+  public function testError3()
+  {
     $ado_errmsg = $this->ado_connection->ErrorMsg();
     $pa_errmsg = $this->pha_connection->ErrorMsg();
     // remove the database name from error message
@@ -209,6 +217,7 @@ class ConnectionTest extends PheasantAdodbTestCase
   }
 
 
+
   public function testAutoExecute()
   {
     $data = array('firstname'=>'testAutoExecuteInsert','lastname'=>'testAutoExecuteInsert');
@@ -239,7 +248,6 @@ class ConnectionTest extends PheasantAdodbTestCase
     $pha_result = $this->pha_connection->AutoExecute('user', $data, 'UPDATE', $where);
     $this->assertEquals($ado_result, $pha_result);
   }
-
   public function testTransaction()
   {
     $this->ado_connection->StartTrans();
@@ -263,25 +271,40 @@ class ConnectionTest extends PheasantAdodbTestCase
   {
     // ADOdb is flipping out with PHP 5.3.10, can't compare results
 
-    #$this->ado_connection->StartTrans();
+    //$this->ado_connection->StartTrans();
     $this->pha_connection->StartTrans();
 
     $data = array('firstname'=>'testTransactionRollback','lastname'=>'testTransactionRollback');
-    #$ado_result = $this->ado_connection->AutoExecute('user', $data, 'INSERT');
+    //$ado_result = $this->ado_connection->AutoExecute('user', $data, 'INSERT');
     $pha_result = $this->pha_connection->AutoExecute('user', $data, 'INSERT');
-    #$this->assertEquals($ado_result, $pha_result);
+    //$this->assertEquals($ado_result, $pha_result);
 
-    #$ado_result = $this->ado_connection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
-    $pha_result = $this->pha_connection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
-    #$this->assertEquals($ado_result, $pha_result);
-    $this->assertFalse($pha_result);
+    $exceptionCaught = false;
+    try {
+      //$ado_result = $this->ado_connection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
+      $pha_result = $this->pha_connection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
+      //$this->assertEquals($ado_result, $pha_result);
+      //$this->assertFalse($pha_result);
+    }
+    catch (\PheasantAdodb\Exception $e)
+    {
+      $exceptionCaught = true;
+    }
+    //catch (\ADODB_Exception $e)
+    //{
+    //  $exceptionCaught = true;
+    //}
 
+    if (!$exceptionCaught)
+      $this->fail("Exception not thrown");
+
+    //$ado_result = $this->pha_connection->HasFailedTrans();
     $pha_result = $this->pha_connection->HasFailedTrans();
     $this->assertTrue(true, $pha_result);
 
-    #$ado_result = $this->ado_connection->CompleteTrans();
+    //$ado_result = $this->ado_connection->CompleteTrans();
     $pha_result = $this->pha_connection->CompleteTrans();
-    #$this->assertEquals($ado_result, $pha_result);
+    //$this->assertEquals($ado_result, $pha_result);
     $this->assertFalse($pha_result);
   }
 }
