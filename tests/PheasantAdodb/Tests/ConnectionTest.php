@@ -247,7 +247,27 @@ class ConnectionTest extends PheasantAdodbTestCase
     $ado_result = $this->ado_connection->AutoExecute('user', $data, 'UPDATE', $where);
     $pha_result = $this->pha_connection->AutoExecute('user', $data, 'UPDATE', $where);
     $this->assertEquals($ado_result, $pha_result);
+
+    // non-existant column
+    $data = array('userid' => 200, 'firstname'=>'testAutoExecuteWithNonExistant', 'nonexistant' => 2);
+    $ado_result = $this->ado_connection->AutoExecute('user', $data, 'INSERT');
+    $pha_result = $this->pha_connection->AutoExecute('user', $data, 'INSERT');
+    $this->assertEquals($ado_result, $pha_result);
+    $ado_result = $this->ado_connection->GetAll('SELECT * FROM user WHERE userid = ?', array(200));
+    $pha_result = $this->pha_connection->GetAll('SELECT * FROM user WHERE userid = ?', array(200));
+    $this->assertEquals($ado_result, $pha_result);
+
+    // column name has different case
+    $data = array('userid' => 201, 'FirstName'=>'testAutoExecuteWithCaseChange');
+    $ado_result = $this->ado_connection->AutoExecute('user', $data, 'INSERT');
+    $pha_result = $this->pha_connection->AutoExecute('user', $data, 'INSERT');
+    $this->assertEquals($ado_result, $pha_result);
+    $ado_result = $this->ado_connection->GetAll('SELECT * FROM user WHERE userid = ?', array(201));
+    $pha_result = $this->pha_connection->GetAll('SELECT * FROM user WHERE userid = ?', array(201));
+    $this->assertEquals($ado_result, $pha_result);
   }
+
+
   public function testTransaction()
   {
     $this->ado_connection->StartTrans();

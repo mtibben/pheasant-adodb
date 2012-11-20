@@ -267,16 +267,30 @@ class Connection {
       return false;
     }
 
+    // Clean up $fields_values
+    // Ignore non-existant columns
+    // Allows for keys with different casing
+    $tableCols = array_keys($tableP->columns());
+    $tableColsMap = array_combine(array_change_key_case($tableCols), $tableCols);
+
+    $validFieldValues = array();
+    foreach($fields_values as $col => $val)
+    {
+      $colkey = strtolower($col);
+      if (isset($tableColsMap[$colkey]))
+        $validFieldValues[$tableColsMap[$colkey]] = $val;
+    }
+
     try
     {
       if ($mode == 'INSERT')
       {
-        $this->_lastResult = $tableP->insert($fields_values);
+        $this->_lastResult = $tableP->insert($validFieldValues);
       }
       else
       {
         $criteria = new \Pheasant\Query\Criteria($where);
-        $this->_lastResult = $tableP->update($fields_values, $criteria);
+        $this->_lastResult = $tableP->update($validFieldValues, $criteria);
       }
     }
     catch(\Exception $e)
