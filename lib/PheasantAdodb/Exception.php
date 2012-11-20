@@ -8,7 +8,7 @@ class Exception extends \Exception {
   var $sql = '';
   var $params = '';
 
-  function __construct($dbms, $fn, $errno, $errmsg, $p1, $p2)
+  public function __construct($dbms, $fn, $errno=-1, $errmsg='', $p1='', $p2='')
   {
     switch($fn) {
       case 'EXECUTE':
@@ -28,6 +28,6 @@ class Exception extends \Exception {
     if (!is_numeric($errno))
       $errno = -1;
 
-    parent::__construct($s,$errno);
+    parent::__construct($s, $errno);
   }
 }

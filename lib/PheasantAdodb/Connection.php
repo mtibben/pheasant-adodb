@@ -13,7 +13,7 @@ class Connection {
   public $_oldRaiseFn =  false;
   public $_transOK = null;
 
-  private $_connection;
+  protected $_connection;
 
   private $_lastResult;
   private $_lastSql;
@@ -239,13 +239,9 @@ class Connection {
       }
     }
     catch(\Exception $e) {
-      $this->_errorMsg = $e->getMessage();
-      $this->_errorNo = $e->getCode();
+      $this->_raiseError('REPLACE', $e->getCode(), $e->getMessage());
+      return 0;
     }
-
-    $this->_handleError('REPLACE');
-
-    return 0;
   }
 
 
@@ -264,28 +260,28 @@ class Connection {
     if ($mode == 'UPDATE' && !$where)
       throw new \BadMethodCallException('AutoExecute: Illegal mode=UPDATE with empty WHERE clause');
 
-    $table = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
-    if (!$table->exists())
+    $tableP = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
+    if (!$tableP->exists())
+    {
+      $this->_raiseError('AUTOEXECUTE', -1, "Table $table doesn't exist", $table, $fields_values);
       return false;
+    }
 
     try
     {
       if ($mode == 'INSERT')
       {
-        $this->_lastResult = $table->insert($fields_values);
+        $this->_lastResult = $tableP->insert($fields_values);
       }
       else
       {
         $criteria = new \Pheasant\Query\Criteria($where);
-        $this->_lastResult = $table->update($fields_values, $criteria);
+        $this->_lastResult = $tableP->update($fields_values, $criteria);
       }
     }
     catch(\Exception $e)
     {
-      $this->_errorMsg = $e->getMessage();
-      $this->_errorNo = $e->getCode();
-      $this->_handleError('AUTOEXECUTE');
-
+      $this->_raiseError('AUTOEXECUTE', $e->getCode(), $e->getMessage());
       return false;
     }
 
@@ -313,23 +309,26 @@ class Connection {
       return false;
   }
 
-  private function _handleError($functionName)
+  private function _raiseError($functionName, $errno=-1, $errmsg='', $p1='', $p2='')
   {
+    $this->_errorNo = $errno;
+    $this->_errorMsg = $errmsg;
+
     $callable = $this->_findCallableFn($this->raiseErrorFn);
     if ($callable)
-      call_user_func($callable, $this->databaseType, $functionName, $this->ErrorNo(), $this->ErrorMsg(), '', '');
+      call_user_func($callable, $this->databaseType, $functionName, $errno, $errmsg, $p1, $p2);
   }
 
   // --------------------------------------
   // Transaction methods
 
-  public function ADODB_TransMonitor($dbms, $functionName, $errno, $errmsg, $p1, $p2)
+  private function ADODB_TransMonitor()
   {
     $this->_transOK = false;
 
     $callable = $this->_findCallableFn($this->_oldRaiseFn);
     if ($callable)
-      call_user_func($callable, $this->databaseType, $functionName, $errno, $errmsg, $p1, $p2);
+      call_user_func_array($callable, func_get_args());
   }
 
 
@@ -460,10 +459,7 @@ class Connection {
     }
     catch(\Exception $e)
     {
-      $this->_errorMsg = $e->getMessage();
-      $this->_errorNo = $e->getCode();
-      $this->_handleError('EXECUTE');
-
+      $this->_raiseError('EXECUTE', $e->getCode(), $e->getMessage(), $sql, $inputarr);
       return false;
     }
   }
