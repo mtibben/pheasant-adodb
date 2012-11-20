@@ -16,6 +16,7 @@ Limitations and assumptions
  * Tries to match the behavour of ADOdb v4.81 with the adodb-mysqlt driver only
  * Assumes ADODB_FETCH_ASSOC as the only fetchmode
  * Assumes adodb-exceptions.inc.php is used
+ * `->Replace(` does not support disabling auto quoting
  * Every field is escaped as if it were a string
  * Magic quotes not supported
 

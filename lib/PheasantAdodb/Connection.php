@@ -203,6 +203,9 @@ class Connection {
   */
   public function Replace($table, array $fieldArray, $keyCol, $autoQuote=false, $has_autoinc=false)
   {
+    if (!$autoQuote)
+      throw new \BadMethodCallException("autoQuote=false is not supported. That would actually be crazy.");
+
     $this->_resetQuery();
 
     $keys = array();
@@ -212,19 +215,35 @@ class Connection {
 
     foreach($keyCol as $key)
     {
-      if (!array_key_exists($key, $fieldArray))
-        throw new \Exception("Key $key doesn't exist in fieldArray");
-      $keys[$key] = $fieldArray[$key];
+      if (isset($fieldArray[$key]))
+        $keys[$key] = $fieldArray[$key];
+    }
+
+    // sanity check on keys
+    // $keysCount should = 0 (for an insert)
+    // or equal the same number that we passed
+    $keysCount = count($keys);
+    if (! (($keysCount == count($keyCol)) || ($keysCount == 0)))
+    {
+        $this->_raiseError('REPLACE', -1, "Key column condition mismatch");
+        return 0;
     }
 
     try {
-      $criteria = new \Pheasant\Query\Criteria($keys);
+      if ($keysCount)
+      {
+        $criteria = new \Pheasant\Query\Criteria($keys);
 
-      $keyexistsq = new \Pheasant\Query\Query($this->_connection);
-      $keyexistsq
-        ->from($table)
-        ->where($criteria);
-      $keyexists = $keyexistsq->count();
+        $keyexistsq = new \Pheasant\Query\Query($this->_connection);
+        $keyexistsq
+          ->from($table)
+          ->where($criteria);
+        $keyexists = $keyexistsq->count();
+      }
+      else
+      {
+        $keyexists = false;
+      }
 
       $phtable = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
       if ($keyexists)
