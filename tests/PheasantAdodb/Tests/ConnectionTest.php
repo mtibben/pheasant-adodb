@@ -25,6 +25,30 @@ class ConnectionTest extends PheasantAdodbTestCase
     $this->assertEquals($ado_row, $pa_row);
   }
 
+  public function testExecuteBinding1()
+  {
+    $sql = "SELECT COUNT(*) FROM user WHERE lastname=?";
+    $ado_result = $this->ado_connection->Execute($sql, array('Castle'));
+    $pha_result = $this->pha_connection->Execute($sql, array('Castle'));
+
+    $ado_row = $ado_result->FetchRow();
+    $pa_row = $pha_result->FetchRow();
+    $this->assertEquals($ado_row, $pa_row);
+  }
+
+  public function testExecuteBinding2()
+  {
+    $sql = "SELECT COUNT(*) FROM user WHERE lastname=?";
+    $ado_result = $this->ado_connection->Execute($sql, array('Castle', 'extra'));
+    $pha_result = $this->pha_connection->Execute($sql, array('Castle', 'extra'));
+
+    $this->assertEquals('PheasantAdodb\RecordSet', get_class($pha_result));
+
+    $ado_row = $ado_result->FetchRow();
+    $pa_row = $pha_result->FetchRow();
+    $this->assertEquals($ado_row, $pa_row);
+  }
+
   public function testQuery()
   {
     $sql = "SELECT 1, 2, 3, 'test'";

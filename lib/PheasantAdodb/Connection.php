@@ -266,8 +266,6 @@ class Connection {
 
   public function AutoExecute($table, $fields_values, $mode = 'INSERT', $where = FALSE)
   {
-    $this->_resetQuery();
-
     // normalise $mode
     if ($mode == 'UPDATE' || $mode == 2)
       $mode = 'UPDATE';
@@ -278,6 +276,8 @@ class Connection {
 
     if ($mode == 'UPDATE' && !$where)
       throw new \BadMethodCallException('AutoExecute: Illegal mode=UPDATE with empty WHERE clause');
+
+    $this->_resetQuery();
 
     $tableP = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
     if (!$tableP->exists())
@@ -484,14 +484,33 @@ class Connection {
     // pheasant expects an array
     if($inputarr === false)
       $inputarr = array();
+    if (!is_array($inputarr))
+      $inputarr = array($inputarr);
 
-    try
-    {
+    // adodb doesn't care about extra parameters
+    // pheasant throws an exception
+    // Here is a massive kludge to catch binder exceptions
+    try {
+      $sql = $this->_connection->binder()->bind($sql, $inputarr);
+      $inputarr = array();
+    }
+    catch (\Exception $e) {
+      if (preg_match('/(\d+) parameters left over/', $e->getMessage(), $matches))
+      {
+        $inputarr = array_slice($inputarr, count($inputarr)-$matches[1]);
+      }
+      else
+      {
+        $this->_raiseError('EXECUTE', $e->getCode(), $e->getMessage(), $sql, $inputarr);
+        return false;
+      }
+    }
+
+    try {
       $this->_lastSql = $sql;
       return $this->_lastResult = $this->_connection->execute($sql, $inputarr);
     }
-    catch(\Exception $e)
-    {
+    catch(\Exception $e) {
       $this->_raiseError('EXECUTE', $e->getCode(), $e->getMessage(), $sql, $inputarr);
       return false;
     }
