@@ -6,34 +6,60 @@ class Connection {
   public $databaseType = 'pheasant-adodb';
   public $dataProvider = 'mysql';
   public $replaceQuote = "\\'";
-  public $raiseErrorFn = 'adodb_throw';
+  public $raiseErrorFn;
 
   public $transOff = 0;
   public $transCnt = 0;
   public $_oldRaiseFn =  false;
   public $_transOK = null;
 
-  protected $_connection;
+  private $_connection;
 
   private $_lastResult;
   private $_lastSql;
   private $_errorMsg;
   private $_errorNo;
 
+  public $fetchmode;
+  const ADODB_FETCH_ASSOC = 2;
 
-  public function __construct(\Pheasant\Database\Mysqli\Connection $connection)
+
+  /**
+   * @param \Pheasant\Database\Mysqli\Connection $connection
+   * @param int $fetchMode
+   * @param string $raiseErrorFn
+   */
+  public function __construct(\Pheasant\Database\Mysqli\Connection $connection, $fetchMode = self::ADODB_FETCH_ASSOC, $raiseErrorFn = 'adodb_throw')
   {
     $this->_connection = $connection;
+    $this->fetchmode = $fetchMode;
+    $this->raiseErrorFn = $raiseErrorFn;
   }
 
+  /**
+   * @param mode The fetchmode ADODB_FETCH_ASSOC or ADODB_FETCH_NUM
+   */
+  public function SetFetchMode($mode)
+  {
+    $oldFetchmode = $this->fetchmode;
+    $this->fetchmode = $mode;
+
+    return $oldFetchmode;
+  }
+
+  /**
+   * Reset the query params before anything is executed
+   */
   private function _resetQuery()
   {
+    if ($this->fetchmode != self::ADODB_FETCH_ASSOC)
+      throw new Exception("Fetchmodes other than ADODB_FETCH_ASSOC have not been implemented");
+
     unset($this->_lastResult);
     unset($this->_lastSql);
     unset($this->_errorMsg);
     unset($this->_errorNo);
   }
-
 
   public function Affected_Rows()
   {
@@ -65,8 +91,9 @@ class Connection {
   public function &SelectLimit($sql, $nrows=-1, $offset=-1, $inputarr=false, $secs=0)
   {
     $offsetStr = ($offset>=0) ? ((integer)$offset)."," : '';
+    $result = $this->Execute($sql." LIMIT $offsetStr".((integer)$nrows), $inputarr);
 
-    return $this->Execute($sql." LIMIT $offsetStr".((integer)$nrows), $inputarr);
+    return $result;
   }
 
   public function &GetAll($sql, $inputarr=false)
@@ -76,12 +103,12 @@ class Connection {
     return $arr;
   }
 
-  public function &GetAssoc($sql, $inputarr=false, $force_array=false, $first2cols=false)
+  public function &GetAssoc($sql, $inputarr=false, $forceArray=false, $first2cols=false)
   {
     $rs =& $this->Execute($sql, $inputarr);
     if (!$rs)
       return false;
-    $arr =& $rs->GetAssoc($force_array, $first2cols);
+    $arr =& $rs->GetAssoc($forceArray, $first2cols);
 
     return $arr;
   }
@@ -106,7 +133,8 @@ class Connection {
       $rs =& $this->Execute($sql, $inputarr);
       if ($rs)
       {
-        if (!$rs->EOF) $ret = reset($rs->fields);
+        if (!$rs->EOF)
+          $ret = reset($rs->fields);
         $rs->Close();
       }
 
@@ -121,20 +149,26 @@ class Connection {
   {
     $rv = false;
     $rs =& $this->Execute($sql, $inputarr);
-    if ($rs) {
+    if ($rs)
+    {
       $rv = array();
-        if ($trim) {
-        while (!$rs->EOF) {
+      if ($trim)
+      {
+        while (!$rs->EOF)
+        {
           $rv[] = trim(reset($rs->fields));
           $rs->MoveNext();
-          }
-      } else {
-        while (!$rs->EOF) {
+        }
+      }
+      else
+      {
+        while (!$rs->EOF)
+        {
           $rv[] = reset($rs->fields);
           $rs->MoveNext();
-          }
+        }
       }
-        $rs->Close();
+      $rs->Close();
     }
 
     return $rv;
@@ -167,7 +201,7 @@ class Connection {
   */
   public function &GetRow($sql, $inputarr=false)
   {
-    $rs =& $this->Execute($sql,$inputarr);
+    $rs =& $this->Execute($sql, $inputarr);
 
     if (!$rs)
       return false;
@@ -201,14 +235,14 @@ class Connection {
   *
   * returns 0 = fail, 1 = update, 2 = insert
   */
-  public function Replace($table, array $fieldArray, $keyCol, $autoQuote=false, $has_autoinc=false)
+  public function Replace($table, array $fieldArray, $keyCol, $autoQuote=false, $hasAutoinc=false)
   {
     if (!$autoQuote)
       throw new \BadMethodCallException("autoQuote=false is not supported. That would actually be crazy.");
 
     $this->_resetQuery();
 
-    $keys = array();
+    $criteriaKeys = array();
 
     if (!is_array($keyCol))
       $keyCol = array($keyCol);
@@ -216,23 +250,27 @@ class Connection {
     foreach($keyCol as $key)
     {
       if (isset($fieldArray[$key]))
-        $keys[$key] = $fieldArray[$key];
+        $criteriaKeys[$key] = $fieldArray[$key];
+
+      if ($hasAutoinc)
+        unset($fieldArray[$key]);
     }
 
     // sanity check on keys
     // $keysCount should = 0 (for an insert)
     // or equal the same number that we passed
-    $keysCount = count($keys);
+    $keysCount = count($criteriaKeys);
     if (! (($keysCount == count($keyCol)) || ($keysCount == 0)))
     {
         $this->_raiseError('REPLACE', -1, "Key column condition mismatch");
         return 0;
     }
 
+
     try {
       if ($keysCount)
       {
-        $criteria = new \Pheasant\Query\Criteria($keys);
+        $criteria = new \Pheasant\Query\Criteria($criteriaKeys);
 
         $keyexistsq = new \Pheasant\Query\Query($this->_connection);
         $keyexistsq
@@ -258,7 +296,7 @@ class Connection {
       }
     }
     catch(\Exception $e) {
-      $this->_raiseError('REPLACE', $e->getCode(), $e->getMessage());
+      $this->_raiseError('REPLACE', $e->getCode(), $e->getMessage(), $table, $fieldArray);
       return 0;
     }
   }
@@ -300,8 +338,7 @@ class Connection {
         $validFieldValues[$tableColsMap[$colkey]] = $val;
     }
 
-    try
-    {
+    try {
       if ($mode == 'INSERT')
       {
         $this->_lastResult = $tableP->insert($validFieldValues);
@@ -312,22 +349,20 @@ class Connection {
         $this->_lastResult = $tableP->update($validFieldValues, $criteria);
       }
     }
-    catch(\Exception $e)
-    {
-      $this->_raiseError('AUTOEXECUTE', $e->getCode(), $e->getMessage());
+    catch(\Exception $e) {
+      $this->_raiseError('AUTOEXECUTE', $e->getCode(), $e->getMessage(), $table, $fields_values);
       return false;
     }
 
     return true;
   }
 
-
   public function Close()
   {
     $this->_connection->close();
   }
 
-  private function adodb_throw($dbms, $fn, $errno, $errmsg, $p1, $p2)
+  public function adodb_throw($dbms, $fn, $errno, $errmsg, $p1, $p2)
   {
     throw new Exception($dbms, $fn, $errno, $errmsg, $p1, $p2);
   }
@@ -377,7 +412,8 @@ class Connection {
   */
   public function StartTrans($errfn = 'ADODB_TransMonitor')
   {
-    if ($this->transOff > 0) {
+    if ($this->transOff > 0)
+    {
       $this->transOff += 1;
       return;
     }
@@ -390,7 +426,6 @@ class Connection {
     $this->transOff = 1;
   }
 
-
   /**
     Used together with StartTrans() to end a transaction. Monitors connection
     for sql errors, and will commit or rollback as appropriate.
@@ -401,18 +436,23 @@ class Connection {
   */
   public function CompleteTrans($autoComplete = true)
   {
-    if ($this->transOff > 1) {
+    if ($this->transOff > 1)
+    {
       $this->transOff -= 1;
       return true;
     }
     $this->raiseErrorFn = $this->_oldRaiseFn;
 
     $this->transOff = 0;
-    if ($this->_transOK && $autoComplete) {
-      if (!$this->CommitTrans()) {
+    if ($this->_transOK && $autoComplete)
+    {
+      if (!$this->CommitTrans())
+      {
         $this->_transOK = false;
       }
-    } else {
+    }
+    else
+    {
       $this->_transOK = false;
       $this->RollbackTrans();
     }
@@ -421,23 +461,22 @@ class Connection {
   }
 
   /*
-    At the end of a StartTrans/CompleteTrans block, perform a rollback.
-  */
+   * At the end of a StartTrans/CompleteTrans block, perform a rollback.
+   */
   public function FailTrans()
   {
     $this->_transOK = false;
   }
 
   /**
-    Check if transaction has failed, only for Smart Transactions.
-  */
+   * Check if transaction has failed, only for Smart Transactions.
+   */
   public function HasFailedTrans()
   {
     if ($this->transOff > 0)
       return $this->_transOK == false;
     return false;
   }
-
 
   public function BeginTrans()
   {
@@ -478,7 +517,6 @@ class Connection {
     return true;
   }
 
-
   private function _query($sql, $inputarr)
   {
     // pheasant expects an array
@@ -488,8 +526,8 @@ class Connection {
       $inputarr = array($inputarr);
 
     // adodb doesn't care about extra parameters
-    // pheasant throws an exception
-    // Here is a massive kludge to catch binder exceptions
+    // But pheasant throws an exception when extra params are present
+    // Here is a massive kludge to do the binding ourselves, then modify the params we get an exception
     try {
       $sql = $this->_connection->binder()->bind($sql, $inputarr);
       $inputarr = array();
@@ -548,34 +586,41 @@ class Connection {
       ;
   }
 
-
   public function &MetaColumns($table)
   {
     $tbl = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
     $cols = $tbl->columns();
 
     $retarr = array();
-    foreach ($cols as $name => $data) {
+    foreach ($cols as $name => $data)
+    {
       $fld = new FieldObject();
       $fld->name = $name;
       $type = $data['Type'];
 
       // split type into type(length):
       $fld->scale = null;
-      if (preg_match("/^(.+)\((\d+),(\d+)/", $type, $query_array)) {
+      if (preg_match("/^(.+)\((\d+),(\d+)/", $type, $query_array))
+      {
         $fld->type = $query_array[1];
         $fld->max_length = is_numeric($query_array[2]) ? $query_array[2] : -1;
         $fld->scale = is_numeric($query_array[3]) ? $query_array[3] : -1;
-      } elseif (preg_match("/^(.+)\((\d+)/", $type, $query_array)) {
+      }
+      elseif (preg_match("/^(.+)\((\d+)/", $type, $query_array))
+      {
         $fld->type = $query_array[1];
         $fld->max_length = is_numeric($query_array[2]) ? $query_array[2] : -1;
-      } elseif (preg_match("/^(enum)\((.*)\)$/i", $type, $query_array)) {
+      }
+      elseif (preg_match("/^(enum)\((.*)\)$/i", $type, $query_array))
+      {
         $fld->type = $query_array[1];
         $arr = explode(",",$query_array[2]);
         $fld->enums = $arr;
         $zlen = max(array_map("strlen",$arr)) - 2; // PHP >= 4.0.6
         $fld->max_length = ($zlen > 0) ? $zlen : 1;
-      } else {
+      }
+      else
+      {
         $fld->type = $type;
         $fld->max_length = -1;
       }
@@ -585,12 +630,15 @@ class Connection {
       $fld->binary = (strpos($type,'blob') !== false);
       $fld->unsigned = (strpos($type,'unsigned') !== false);
 
-      if (!$fld->binary) {
+      if (!$fld->binary)
+      {
         $d = $data['Default'];
-        if ($d != '' && $d != 'NULL') {
+        if ($d != '' && $d != 'NULL')
+        {
           $fld->has_default = true;
           $fld->default_value = $d;
-        } else {
+        } else
+        {
           $fld->has_default = false;
         }
       }
@@ -601,18 +649,16 @@ class Connection {
       return $retarr;
   }
 
-
   /**
-  * Quotes a string, without prefixing nor appending quotes.
-  */
+   * Quotes a string, without prefixing nor appending quotes.
+   */
   public function escape($s)
   {
-    if ($this->replaceQuote[0] == '\\'){
+    if ($this->replaceQuote[0] == '\\')
       $s = str_replace(array('\\',"\0"),array('\\\\',"\\\0"),$s);
-    }
+
     return str_replace("'",$this->replaceQuote,$s);
   }
-
 
   /**
    * Correctly quotes a string so that all strings are escaped. We prefix and append

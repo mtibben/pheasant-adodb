@@ -12,8 +12,8 @@ class FieldObjectTest extends PheasantAdodbTestCase {
   public function testFetchFieldName()
   {
     $sql = "SELECT 1 as one, 2 as two, 3 as three";
-    $ado_result = $this->ado_connection->Execute($sql)->FetchField(1)->name;
-    $pa_result = $this->pha_connection->Execute($sql)->FetchField(1)->name;
-    $this->assertEquals($ado_result, $pa_result);
+    $adoResult = $this->adoConnection->Execute($sql)->FetchField(1)->name;
+    $phaResult = $this->phaConnection->Execute($sql)->FetchField(1)->name;
+    $this->assertEquals($adoResult, $phaResult);
   }
 }

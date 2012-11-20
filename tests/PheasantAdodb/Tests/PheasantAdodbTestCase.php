@@ -8,29 +8,29 @@ use Pheasant\Types\String;
 class PheasantAdodbTestCase extends \PHPUnit_Framework_TestCase {
 
   public $pheasant;
-  public $testdb_pha_dsn;
-  public $testdb_ado_dsn;
+  public $testdbPhaDsn;
+  public $testdbAdoDsn;
 
-  public $pha_connection;
-  public $ado_connection;
+  public $phaConnection;
+  public $adoConnection;
 
   public function setUp()
   {
-    $this->testdb_pha_dsn = new \Pheasant\Database\Dsn('mysql://root@localhost/pheasantadodb_test1?charset=utf8');
-    $this->testdb_ado_dsn = new \Pheasant\Database\Dsn('mysql://root@localhost/pheasantadodb_test2?charset=utf8');
+    $this->testdbPhaDsn = new \Pheasant\Database\Dsn('mysql://root@localhost/pheasantadodb_test1?charset=utf8');
+    $this->testdbAdoDsn = new \Pheasant\Database\Dsn('mysql://root@localhost/pheasantadodb_test2?charset=utf8');
 
     // initialize a new pheasant
-    $this->pheasant = \Pheasant::setup((string)$this->testdb_pha_dsn);
+    $this->pheasant = \Pheasant::setup((string)$this->testdbPhaDsn);
 
-    $this->pha_connection = new \PheasantAdodb\Connection($this->pheasant->connection());
+    $this->phaConnection = new \PheasantAdodb\Connection($this->pheasant->connection());
 
-    $this->ado_connection = &NewADOConnection('mysqlt');
-    $this->ado_connection->Connect(
-      $this->testdb_ado_dsn->host,
-      $this->testdb_ado_dsn->user,
-      $this->testdb_ado_dsn->pass,
-      $this->testdb_ado_dsn->database);
-    $this->ado_connection->SetFetchMode(ADODB_FETCH_ASSOC);
+    $this->adoConnection = &NewADOConnection('mysqlt');
+    $this->adoConnection->Connect(
+      $this->testdbAdoDsn->host,
+      $this->testdbAdoDsn->user,
+      $this->testdbAdoDsn->pass,
+      $this->testdbAdoDsn->database);
+    $this->adoConnection->SetFetchMode(ADODB_FETCH_ASSOC);
 
 
     // wipe sequence pool
@@ -64,7 +64,7 @@ class PheasantAdodbTestCase extends \PHPUnit_Framework_TestCase {
   {
     $this->buildUserTable($this->pheasant->connection());
 
-    $adodb = new \Pheasant\Database\Mysqli\Connection($this->testdb_ado_dsn);
+    $adodb = new \Pheasant\Database\Mysqli\Connection($this->testdbAdoDsn);
     $this->buildUserTable($adodb);
     $adodb->close();
   }

@@ -29,52 +29,46 @@ class RecordSet implements \Iterator
     }
   }
 
-
   // Iterator API
   // -------------------------
-  function rewind()
+  public function rewind()
   {
     $this->MoveFirst();
   }
 
-  function valid()
+  public function valid()
   {
     return !$this->EOF;
   }
 
-  function key()
+  public function key()
   {
     return $this->_currentRow;
   }
 
-  function current()
+  public function current()
   {
     return $this->fields;
   }
 
-  function next()
+  public function next()
   {
     $this->MoveNext();
   }
 
-  function hasMore()
+  public function hasMore()
   {
     return !$this->EOF;
   }
   // -------------------------
 
-
-  public function Close()
-  {
-
-  }
+  public function Close() {}
 
   private function _initrs()
   {
     $this->_numOfRows = $this->_resultSet->count();
     $this->_numOfFields = count($this->_resultSet->fields());
   }
-
 
   private function _seek($row)
   {
@@ -83,7 +77,7 @@ class RecordSet implements \Iterator
     return true;
   }
 
-  private function _fetch($ignore_fields=false)
+  private function _fetch()
   {
     if($this->_iterator->valid())
     {
@@ -134,7 +128,7 @@ class RecordSet implements \Iterator
     return $arr;
   }
 
-  public function MetaType($t,$len=-1,$fieldobj=false)
+  public function MetaType($t, $len=-1, $fieldobj=false)
   {
     return 'C';
   }
@@ -193,14 +187,16 @@ class RecordSet implements \Iterator
    *
    * @return true if there still rows available, or false if there are no more rows (EOF).
    */
-  function Move($rowNumber = 0)
+  public function Move($rowNumber = 0)
   {
     $this->EOF = false;
     if ($rowNumber == $this->_currentRow)
       return true;
     if ($rowNumber >= $this->_numOfRows)
+    {
       if ($this->_numOfRows != -1)
         $rowNumber = $this->_numOfRows-2;
+    }
 
     if ($this->_seek($rowNumber))
     {
@@ -227,7 +223,7 @@ class RecordSet implements \Iterator
    *
    * @return an array indexed by the rows (0-based) from the recordset
    */
-  function &GetArray($nRows = -1)
+  public function &GetArray($nRows = -1)
   {
     $results = array();
     $cnt = 0;
@@ -241,7 +237,7 @@ class RecordSet implements \Iterator
     return $results;
   }
 
-  function &GetAll($nRows = -1)
+  public function &GetAll($nRows = -1)
   {
     $arr =& $this->GetArray($nRows);
 
@@ -252,7 +248,7 @@ class RecordSet implements \Iterator
    * return whole recordset as a 2-dimensional associative array if there are more than 2 columns.
    * The first column is treated as the key and is not included in the array.
    * If there is only 2 columns, it will return a 1 dimensional array of key-value pairs unless
-   * $force_array == true.
+   * $forceArray == true.
    *
    * @param [force_array] has only meaning if we have 2 data columns. If false, a 1 dimensional
    *  array is returned, otherwise a 2 dimensional array is returned. If this sounds confusing,
@@ -264,7 +260,7 @@ class RecordSet implements \Iterator
    * @return an associative array indexed by the first column of the array,
    *  or false if the  data has less than 2 cols.
    */
-  function &GetAssoc($force_array = false, $first2cols = false)
+  public function &GetAssoc($forceArray = false, $first2cols = false)
   {
     $cols = $this->_numOfFields;
     if ($cols < 2)
@@ -273,28 +269,39 @@ class RecordSet implements \Iterator
     $numIndex = isset($this->fields[0]);
     $results = array();
 
-    if (!$first2cols && ($cols > 2 || $force_array)) {
-      if ($numIndex) {
-        while (!$this->EOF) {
+    if (!$first2cols && ($cols > 2 || $forceArray))
+    {
+      if ($numIndex)
+      {
+        while (!$this->EOF)
+        {
           $results[trim($this->fields[0])] = array_slice($this->fields, 1);
           $this->MoveNext();
         }
-      } else {
-        while (!$this->EOF) {
+      }
+      else
+      {
+        while (!$this->EOF)
+        {
           $results[trim(reset($this->fields))] = array_slice($this->fields, 1);
           $this->MoveNext();
         }
       }
-    } else {
-      if ($numIndex) {
-        while (!$this->EOF) {
-        // some bug in mssql PHP 4.02 -- doesn't handle references properly so we FORCE creating a new string
+    }
+    else
+    {
+      if ($numIndex)
+      {
+        while (!$this->EOF)
+        {
           $results[trim(($this->fields[0]))] = @$this->fields[1];
           $this->MoveNext();
         }
-      } else {
-        while (!$this->EOF) {
-        // some bug in mssql PHP 4.02 -- doesn't handle references properly so we FORCE creating a new string
+      }
+      else
+      {
+        while (!$this->EOF)
+        {
           $v1 = trim(reset($this->fields));
           $v2 = ''.next($this->fields);
           $results[$v1] = $v2;
