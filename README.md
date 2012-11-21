@@ -5,21 +5,26 @@ Implements a subset of the [ADOdb](http://phplens.com/adodb/) API using [Pheasan
 
 Example Usage
 ----------------------------
-Set up your pheasant connection, then use the ADOdb API.
 ```php
+# set up Pheasant connection
 $pheasant = \Pheasant::setup('mysql://user@localhost/mydb');
 $adodbConnection = new \PheasantAdodb\Connection($pheasant->connection());
 
+# start using ADOdb API
 $adodbConnection->Execute("SELECT 1,2,3")->GetAll();
 ```
 
 Or as a drop in replacement for adodb, you can use the compatability include files
 ```php
+# include compatibility files
 require_once('adodb.inc.php');
 require_once('adodb-exceptions.inc.php');
 
+# instantiate ADOdb, set fetch mode
 $adodbConnection = ADONewConnection('mysql://user@localhost/mydb');
 $adodbConnection->setFetchMode(ADODB_FETCH_ASSOC);
+
+# start using ADOdb API
 $adodbConnection->Execute("SELECT 1,2,3")->GetAll();
 ```
 
