@@ -533,9 +533,9 @@ class Connection {
       $inputarr = array();
     }
     catch (\Exception $e) {
-      if (preg_match('/(\d+) parameters left over/', $e->getMessage(), $matches))
+      if (preg_match('/Parameters left over/', $e->getMessage()))
       {
-        $inputarr = array_slice($inputarr, count($inputarr)-$matches[1]);
+        $inputarr = array_slice($inputarr, count($inputarr)-count($e->leftOverParams));
       }
       else
       {
