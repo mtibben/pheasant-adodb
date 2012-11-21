@@ -16,8 +16,8 @@ define('ADODB_FETCH_BOTH',3);
 
 
 class ADOConnection extends \PheasantAdodb\Connection {}
-class ADORecordSet extends \PheasantAdodb\ADORecordSet {}
-class ADOFieldObject extends \PheasantAdodb\ADOFieldObject {}
+class ADORecordSet extends \PheasantAdodb\RecordSet {}
+class ADOFieldObject extends \PheasantAdodb\FieldObject {}
 
 function &NewADOConnection($dsn)
 {
@@ -31,7 +31,7 @@ function &ADONewConnection($dsn)
   $errHandler = defined('ADODB_ERROR_HANDLER')
                   ? ADODB_ERROR_HANDLER
                   : false;
-  $conn =& new ADOConnection(
+  $conn = new ADOConnection(
     new \Pheasant\Database\Mysqli\Connection(
       new \Pheasant\Database\Dsn($dsn)
     ),

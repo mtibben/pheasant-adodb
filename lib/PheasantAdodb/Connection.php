@@ -13,7 +13,7 @@ class Connection {
   public $_oldRaiseFn =  false;
   public $_transOK = null;
 
-  private $_connection;
+  protected $_connection;
 
   private $_lastResult;
   private $_lastSql;
