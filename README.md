@@ -1,16 +1,16 @@
 Pheasant-adodb
 ==============
-Implements a subset of the ADOdb API using Pheasant
+Implements a subset of the [ADOdb](http://phplens.com/adodb/) API using [Pheasant](http://getpheasant.com/)
 
 
 Example Usage
 ----------------------------
 Set up your pheasant connection, then use the ADOdb API.
 ```php
-$pheasant = \Pheasant::setup('mysql://root@localhost/pheasanttest?charset=utf8');
+$pheasant = \Pheasant::setup('mysql://user@localhost/mydb');
 $adodbConnection = new \PheasantAdodb\Connection($pheasant->connection());
 
-$adodbConnection->getAll("SELECT 1,2,3");
+$adodbConnection->Execute("SELECT 1,2,3")->GetAll();
 ```
 
 Or as a drop in replacement for adodb, you can use the compatability include files
@@ -18,9 +18,9 @@ Or as a drop in replacement for adodb, you can use the compatability include fil
 require_once('adodb.inc.php');
 require_once('adodb-exceptions.inc.php');
 
-$adodbConnection = ADONewConnection('mysql://root@localhost/pheasanttest?charset=utf8');
+$adodbConnection = ADONewConnection('mysql://user@localhost/mydb');
 $adodbConnection->setFetchMode(ADODB_FETCH_ASSOC);
-$adodbConnection->getAll("SELECT 1,2,3");
+$adodbConnection->Execute("SELECT 1,2,3")->GetAll();
 ```
 
 
