@@ -3,10 +3,10 @@
 namespace PheasantAdodb;
 
 class Exception extends \Exception {
-  var $dbms;
-  var $fn;
-  var $sql = '';
-  var $params = '';
+  public $dbms;
+  public $fn;
+  public $sql = '';
+  public $params = '';
 
   public function __construct($dbms, $fn, $errno=-1, $errmsg='', $p1='', $p2='')
   {
