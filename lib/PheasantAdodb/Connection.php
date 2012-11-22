@@ -283,7 +283,7 @@ class Connection {
         $keyexists = false;
       }
 
-      $phtable = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
+      $phtable = $this->_connection->table($table);
       if ($keyexists)
       {
         $this->_lastResult = $phtable->update($fieldArray, $criteria);
@@ -317,7 +317,7 @@ class Connection {
 
     $this->_resetQuery();
 
-    $tableP = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
+    $tableP = $this->_connection->table($table);
     if (!$tableP->exists())
     {
       $this->_raiseError('AUTOEXECUTE', -1, "Table $table doesn't exist", $table, $fields_values);
@@ -588,7 +588,7 @@ class Connection {
 
   public function &MetaColumns($table)
   {
-    $tbl = new \Pheasant\Database\Mysqli\Table($table, $this->_connection);
+    $tbl = $this->_connection->table($table);
     $cols = $tbl->columns();
 
     $retarr = array();
