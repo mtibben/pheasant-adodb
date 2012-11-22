@@ -6,6 +6,12 @@
  */
 
 define('ADODB_ERROR_HANDLER','adodb_throw');
-define('ADODB_EXCEPTION','ADODB_Exception');
+
 
 class ADODB_Exception extends \PheasantAdodb\Exception {}
+
+
+function adodb_throw($dbms, $fn, $errno, $errmsg, $p1, $p2)
+{
+	throw new ADODB_Exception($dbms, $fn, $errno, $errmsg, $p1, $p2);
+}

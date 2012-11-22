@@ -29,7 +29,7 @@ class Connection {
    * @param int $fetchMode
    * @param string $raiseErrorFn
    */
-  public function __construct(\Pheasant\Database\Mysqli\Connection $connection, $fetchMode = self::ADODB_FETCH_ASSOC, $raiseErrorFn = 'adodb_throw')
+  public function __construct(\Pheasant\Database\Mysqli\Connection $connection, $fetchMode = self::ADODB_FETCH_ASSOC, $raiseErrorFn = '_adodb_throw')
   {
     $this->_connection = $connection;
     $this->fetchmode = $fetchMode;
@@ -362,14 +362,9 @@ class Connection {
     $this->_connection->close();
   }
 
-  public function adodb_throw($dbms, $fn, $errno, $errmsg, $p1, $p2)
+  private function _adodb_throw($dbms, $fn, $errno, $errmsg, $p1, $p2)
   {
-    if (defined('ADODB_EXCEPTION'))
-      $excClass = ADODB_EXCEPTION;
-    else
-      $excClass = '\PheasantAdodb\Exception';
-
-    throw new $excClass($dbms, $fn, $errno, $errmsg, $p1, $p2);
+    throw new Exception($dbms, $fn, $errno, $errmsg, $p1, $p2);
   }
 
   private function _findCallableFn($fnName)
