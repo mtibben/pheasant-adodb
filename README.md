@@ -17,8 +17,8 @@ $adodbConnection->Execute("SELECT 1,2,3")->GetAll();
 Or as a drop in replacement for adodb, you can use the compatability include files
 ```php
 # include compatibility files
-require_once('adodb.inc.php');
-require_once('adodb-exceptions.inc.php');
+require_once('adodb/adodb.inc.php');
+require_once('adodb/adodb-exceptions.inc.php');
 
 # instantiate ADOdb, set fetch mode
 $adodbConnection = ADONewConnection('mysql://user@localhost/mydb');

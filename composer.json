@@ -33,5 +33,4 @@
   "autoload": {
     "psr-0": { "PheasantAdodb": ["lib", "tests"] }
   },
-  "include-path": ["includes/"]
 }

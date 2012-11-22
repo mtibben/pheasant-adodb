@@ -8,7 +8,6 @@
  * that a fetchmode will need to be set explicitly
  */
 
-
 define('ADODB_FETCH_DEFAULT',0);
 define('ADODB_FETCH_NUM',1);
 define('ADODB_FETCH_ASSOC',2);

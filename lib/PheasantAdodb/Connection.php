@@ -364,7 +364,12 @@ class Connection {
 
   public function adodb_throw($dbms, $fn, $errno, $errmsg, $p1, $p2)
   {
-    throw new Exception($dbms, $fn, $errno, $errmsg, $p1, $p2);
+    if (defined('ADODB_EXCEPTION'))
+      $excClass = ADODB_EXCEPTION;
+    else
+      $excClass = '\PheasantAdodb\Exception';
+
+    throw new $excClass($dbms, $fn, $errno, $errmsg, $p1, $p2);
   }
 
   private function _findCallableFn($fnName)
