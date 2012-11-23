@@ -52,3 +52,6 @@ mysql -e 'create database pheasantadodb_test1;'
 mysql -e 'create database pheasantadodb_test2;'
 phpunit
 ```
+
+
+[![Build Status](https://api.travis-ci.org/99designs/pheasant-adodb.png)](https://travis-ci.org/99designs/pheasant-adodb)
