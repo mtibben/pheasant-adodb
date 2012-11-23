@@ -2,16 +2,21 @@
     "name": "99designs/pheasant-adodb",
     "description": "A subset of the ADOdb API on Pheasant",
     "keywords": ["datamapper", "orm", "activerecord", "mysql", "99designs", "adodb", "pheasant"],
-    "license": "MIT",
+    "license": "BSD-4-Clause",
     "authors": [
         { "name": "Michael Tibben", "email": "michael.tibben@gmail.com" }
     ],
+    "homepage": "http://github.com/99designs/pheasant-adodb",
     "repositories": [
         {
             "type": "package",
             "package": {
                 "name": "adodb/adodb",
                 "version": "4.81",
+                "license": "BSD-4-Clause",
+                "authors": [
+                    { "name": "John Lim", "email": "jlim@natsoft.com.my" }
+                ],
                 "dist": {
                     "url": "http://downloads.sourceforge.net/project/adodb/adodb-php-4-and-5/adodb-481-for-php/adodb481.zip",
                     "type": "zip"
