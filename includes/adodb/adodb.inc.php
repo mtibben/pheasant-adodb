@@ -18,30 +18,33 @@ class ADOConnection extends \PheasantAdodb\Connection {}
 class ADORecordSet extends \PheasantAdodb\RecordSet {}
 class ADOFieldObject extends \PheasantAdodb\FieldObject {}
 
+
 function adodb_err()
 {
-  return false;
+    return false;
 }
 
 function &NewADOConnection($dsn)
 {
-  $conn =& ADONewConnection($dsn);
+    $conn =& ADONewConnection($dsn);
 
-  return $conn;
+    return $conn;
 }
 
 function &ADONewConnection($dsn)
 {
-  $errHandler = defined('ADODB_ERROR_HANDLER')
-                  ? ADODB_ERROR_HANDLER
-                  : 'adodb_err';
-  $conn = new ADOConnection(
-    new \Pheasant\Database\Mysqli\Connection(
-      new \Pheasant\Database\Dsn($dsn)
-    ),
-    ADODB_FETCH_DEFAULT,
-    $errHandler
-  );
+    $errHandler =
+        defined('ADODB_ERROR_HANDLER')
+        ? ADODB_ERROR_HANDLER
+        : 'adodb_err';
 
-  return $conn;
+    $conn = new ADOConnection(
+        new \Pheasant\Database\Mysqli\Connection(
+            new \Pheasant\Database\Dsn($dsn)
+        ),
+        ADODB_FETCH_DEFAULT,
+        $errHandler
+    );
+
+    return $conn;
 }

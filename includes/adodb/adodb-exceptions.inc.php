@@ -13,5 +13,5 @@ class ADODB_Exception extends \PheasantAdodb\Exception {}
 
 function adodb_throw($dbms, $fn, $errno, $errmsg, $p1, $p2)
 {
-	throw new ADODB_Exception($dbms, $fn, $errno, $errmsg, $p1, $p2);
+    throw new ADODB_Exception($dbms, $fn, $errno, $errmsg, $p1, $p2);
 }

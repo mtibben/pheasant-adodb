@@ -2,32 +2,33 @@
 
 namespace PheasantAdodb;
 
-class Exception extends \Exception {
-  public $dbms;
-  public $fn;
-  public $sql = '';
-  public $params = '';
+class Exception extends \Exception
+{
+    public $dbms;
+    public $fn;
+    public $sql = '';
+    public $params = '';
 
-  public function __construct($dbms, $fn, $errno=-1, $errmsg='', $p1='', $p2='')
-  {
-    switch($fn) {
-      case 'EXECUTE':
-        $this->sql = $p1;
-        $this->params = $p2;
-        $s = "$dbms error: [$errno: $errmsg] in $fn(\"$p1\")\n";
-        break;
-      default:
-        $s = "$dbms error: [$errno: $errmsg] in $fn($p1, $p2)\n";
-        break;
+    public function __construct($dbms, $fn, $errno=-1, $errmsg='', $p1='', $p2='')
+    {
+        switch ($fn) {
+            case 'EXECUTE':
+                $this->sql = $p1;
+                $this->params = $p2;
+                $s = "$dbms error: [$errno: $errmsg] in $fn(\"$p1\")\n";
+                break;
+            default:
+                $s = "$dbms error: [$errno: $errmsg] in $fn($p1, $p2)\n";
+                break;
+        }
+
+        $this->dbms = $dbms;
+        $this->fn = $fn;
+        $this->msg = $errmsg;
+
+        if (!is_numeric($errno))
+            $errno = -1;
+
+        parent::__construct($s, $errno);
     }
-
-    $this->dbms = $dbms;
-    $this->fn = $fn;
-    $this->msg = $errmsg;
-
-    if (!is_numeric($errno))
-      $errno = -1;
-
-    parent::__construct($s, $errno);
-  }
 }

@@ -2,134 +2,132 @@
 
 namespace PheasantAdodb\Tests;
 
-class RecordSetTest extends PheasantAdodbTestCase {
-
-  public function setUp()
-  {
-    parent::setUp();
-    $this->initUserTables();
-  }
-
-  public function testFieldCount()
-  {
-    $sql = "SELECT 1, 2, 3";
-    $adoResult = $this->adoConnection->Execute($sql)->FieldCount();
-    $phaResult = $this->phaConnection->Execute($sql)->FieldCount();
-    $this->assertEquals($adoResult, $phaResult);
-  }
-
-  public function testFetchField()
-  {
-    $sql = "SELECT 1 as one, 2 as two, 3 as three";
-    $adoResult = $this->adoConnection->Execute($sql)->FetchField(2)->name;
-    $phaResult = $this->phaConnection->Execute($sql)->FetchField(2)->name;
-    $this->assertEquals($adoResult, $phaResult);
-  }
-
-  public function testFetchRow()
-  {
-    $sql = "SELECT 1 as one, 2 as two, 3 as three";
-    $adoResult = $this->adoConnection->Execute($sql)->FetchRow();
-    $phaResult = $this->phaConnection->Execute($sql)->FetchRow();
-    $this->assertEquals($adoResult, $phaResult);
-  }
-
-  public function testFetchRowFromNoResults()
-  {
-    $sql = "SELECT 1 FROM user WHERE 1 = 0";
-
-    $adoResult = $this->adoConnection->Execute($sql)->FetchRow();
-    $phaResult = $this->phaConnection->Execute($sql)->FetchRow();
-    $this->assertEquals($adoResult, $phaResult);
-
-    $ado_errmsg = $this->adoConnection->ErrorMsg();
-    $pa_errmsg = $this->phaConnection->ErrorMsg();
-    $this->assertEquals($ado_errmsg, $pa_errmsg);
-
-    $ado_errno = $this->adoConnection->ErrorNo();
-    $pa_errno = $this->phaConnection->ErrorNo();
-    $this->assertEquals($ado_errno, $pa_errno);
-  }
-
-  public function testIterator()
-  {
-    $sql = "SELECT * FROM user";
-
-    $adodb = array();
-    foreach($this->adoConnection->Execute($sql) as $row)
+class RecordSetTest extends PheasantAdodbTestCase
+{
+    public function setUp()
     {
-      $adodb[] = $row;
+        parent::setUp();
+        $this->initUserTables();
     }
 
-    $adoph = array();
-    foreach($this->phaConnection->Execute($sql) as $row)
+    public function testFieldCount()
     {
-      $adoph[] = $row;
+        $sql = "SELECT 1, 2, 3";
+        $adoResult = $this->adoConnection->Execute($sql)->FieldCount();
+        $phaResult = $this->phaConnection->Execute($sql)->FieldCount();
+        $this->assertEquals($adoResult, $phaResult);
     }
 
-    $this->assertEquals($adodb, $adoph);
-  }
+    public function testFetchField()
+    {
+        $sql = "SELECT 1 as one, 2 as two, 3 as three";
+        $adoResult = $this->adoConnection->Execute($sql)->FetchField(2)->name;
+        $phaResult = $this->phaConnection->Execute($sql)->FetchField(2)->name;
+        $this->assertEquals($adoResult, $phaResult);
+    }
 
-  public function testGetAll()
-  {
-    $sql = "SELECT * FROM user";
+    public function testFetchRow()
+    {
+        $sql = "SELECT 1 as one, 2 as two, 3 as three";
+        $adoResult = $this->adoConnection->Execute($sql)->FetchRow();
+        $phaResult = $this->phaConnection->Execute($sql)->FetchRow();
+        $this->assertEquals($adoResult, $phaResult);
+    }
 
-    $adoResult = $this->adoConnection->Execute($sql)->GetAll(2);
-    $phaResult = $this->phaConnection->Execute($sql)->GetAll(2);
-    $this->assertEquals($adoResult, $phaResult);
-  }
+    public function testFetchRowFromNoResults()
+    {
+        $sql = "SELECT 1 FROM user WHERE 1 = 0";
 
-  public function testGetArray()
-  {
-    $sql = "SELECT * FROM user";
+        $adoResult = $this->adoConnection->Execute($sql)->FetchRow();
+        $phaResult = $this->phaConnection->Execute($sql)->FetchRow();
+        $this->assertEquals($adoResult, $phaResult);
 
-    $adoResult = $this->adoConnection->Execute($sql)->GetArray(2);
-    $phaResult = $this->phaConnection->Execute($sql)->GetArray(2);
-    $this->assertEquals($adoResult, $phaResult);
-  }
+        $ado_errmsg = $this->adoConnection->ErrorMsg();
+        $pa_errmsg = $this->phaConnection->ErrorMsg();
+        $this->assertEquals($ado_errmsg, $pa_errmsg);
 
-  public function testGetArrayZero()
-  {
-    $sql = "SELECT * FROM user";
+        $ado_errno = $this->adoConnection->ErrorNo();
+        $pa_errno = $this->phaConnection->ErrorNo();
+        $this->assertEquals($ado_errno, $pa_errno);
+    }
 
-    $adoResult = $this->adoConnection->Execute($sql)->GetArray(0);
-    $phaResult = $this->phaConnection->Execute($sql)->GetArray(0);
-    $this->assertEquals($adoResult, $phaResult);
-  }
+    public function testIterator()
+    {
+        $sql = "SELECT * FROM user";
 
-  public function testGetArrayMore()
-  {
-    $sql = "SELECT * FROM user";
+        $adodb = array();
+        foreach ($this->adoConnection->Execute($sql) as $row) {
+            $adodb[] = $row;
+        }
 
-    $adoResult = $this->adoConnection->Execute($sql)->GetArray(20);
-    $phaResult = $this->phaConnection->Execute($sql)->GetArray(20);
-    $this->assertEquals($adoResult, $phaResult);
-  }
+        $adoph = array();
+        foreach ($this->phaConnection->Execute($sql) as $row) {
+            $adoph[] = $row;
+        }
 
-  public function testGetAssoc()
-  {
-    $sql = "SELECT * FROM user";
+        $this->assertEquals($adodb, $adoph);
+    }
 
-    $adoResult = $this->adoConnection->Execute($sql)->GetAssoc();
-    $phaResult = $this->phaConnection->Execute($sql)->GetAssoc();
-    $this->assertEquals($adoResult, $phaResult);
-  }
+    public function testGetAll()
+    {
+        $sql = "SELECT * FROM user";
 
-  public function testGetAssocForceArray()
-  {
-    $sql = "SELECT userid, firstname FROM user";
+        $adoResult = $this->adoConnection->Execute($sql)->GetAll(2);
+        $phaResult = $this->phaConnection->Execute($sql)->GetAll(2);
+        $this->assertEquals($adoResult, $phaResult);
+    }
 
-    $adoResult = $this->adoConnection->Execute($sql)->GetAssoc(true);
-    $phaResult = $this->phaConnection->Execute($sql)->GetAssoc(true);
-    $this->assertEquals($adoResult, $phaResult);
-  }
+    public function testGetArray()
+    {
+        $sql = "SELECT * FROM user";
 
-  public function testGetAssocFirst2Cols()
-  {
-    $sql = "SELECT * FROM user";
+        $adoResult = $this->adoConnection->Execute($sql)->GetArray(2);
+        $phaResult = $this->phaConnection->Execute($sql)->GetArray(2);
+        $this->assertEquals($adoResult, $phaResult);
+    }
 
-    $adoResult = $this->adoConnection->Execute($sql)->GetAssoc(false, true);
-    $phaResult = $this->phaConnection->Execute($sql)->GetAssoc(false, true);
-    $this->assertEquals($adoResult, $phaResult);
-  }
+    public function testGetArrayZero()
+    {
+        $sql = "SELECT * FROM user";
+
+        $adoResult = $this->adoConnection->Execute($sql)->GetArray(0);
+        $phaResult = $this->phaConnection->Execute($sql)->GetArray(0);
+        $this->assertEquals($adoResult, $phaResult);
+    }
+
+    public function testGetArrayMore()
+    {
+        $sql = "SELECT * FROM user";
+
+        $adoResult = $this->adoConnection->Execute($sql)->GetArray(20);
+        $phaResult = $this->phaConnection->Execute($sql)->GetArray(20);
+        $this->assertEquals($adoResult, $phaResult);
+    }
+
+    public function testGetAssoc()
+    {
+        $sql = "SELECT * FROM user";
+
+        $adoResult = $this->adoConnection->Execute($sql)->GetAssoc();
+        $phaResult = $this->phaConnection->Execute($sql)->GetAssoc();
+        $this->assertEquals($adoResult, $phaResult);
+    }
+
+    public function testGetAssocForceArray()
+    {
+        $sql = "SELECT userid, firstname FROM user";
+
+        $adoResult = $this->adoConnection->Execute($sql)->GetAssoc(true);
+        $phaResult = $this->phaConnection->Execute($sql)->GetAssoc(true);
+        $this->assertEquals($adoResult, $phaResult);
+    }
+
+    public function testGetAssocFirst2Cols()
+    {
+        $sql = "SELECT * FROM user";
+
+        $adoResult = $this->adoConnection->Execute($sql)->GetAssoc(false, true);
+        $phaResult = $this->phaConnection->Execute($sql)->GetAssoc(false, true);
+        $this->assertEquals($adoResult, $phaResult);
+    }
 }
