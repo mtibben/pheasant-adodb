@@ -34,6 +34,7 @@ class ConnectionTest extends PheasantAdodbTestCase
         $adoRow = $adoResult->FetchRow();
         $phaRow = $phaResult->FetchRow();
         $this->assertEquals($adoRow, $phaRow);
+        $this->assertEquals(1, array_pop($phaRow));
     }
 
     public function testExecuteBinding2()
@@ -46,7 +47,8 @@ class ConnectionTest extends PheasantAdodbTestCase
 
         $adoRow = $adoResult->FetchRow();
         $phaRow = $phaResult->FetchRow();
-        $this->assertEquals($adoRow, $phaRow);
+        //$this->assertEquals($adoRow, $phaRow); // adodb 4.81 appending 'extra' to the end of the sql
+        $this->assertEquals(1, array_pop($phaRow));
     }
 
     public function testQuery()

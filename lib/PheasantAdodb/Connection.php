@@ -503,7 +503,7 @@ class Connection
             $inputarr = array();
         } catch (\Exception $e) {
             if (preg_match('/Parameters left over/', $e->getMessage())) {
-                $inputarr = array_slice($inputarr, count($inputarr)-count($e->leftOverParams));
+                $inputarr = array_slice($inputarr, 0, 0-count($e->leftOverParams));
             } else {
                 $this->_raiseError('EXECUTE', $e->getCode(), $e->getMessage(), $sql, $inputarr);
 
