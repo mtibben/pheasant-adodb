@@ -38,10 +38,11 @@ function &ADONewConnection($dsn)
         ? ADODB_ERROR_HANDLER
         : 'adodb_err';
 
-    $conn = new ADOConnection(
-        new \Pheasant\Database\Mysqli\Connection(
-            new \Pheasant\Database\Dsn($dsn)
-        ),
+    $phConn = new \Pheasant\Database\Mysqli\Connection(new \Pheasant\Database\Dsn($dsn));
+    $phConn->connect();
+
+    $conn = new Edge_Database_Connection(
+        $phConn,
         ADODB_FETCH_DEFAULT,
         $errHandler
     );
