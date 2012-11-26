@@ -1,18 +1,18 @@
 {
-    "hash": "59b6f382d1a4a44277dcc80c8cc8d460",
+    "hash": "0b3afde7c82f624334df6c3f1f46597a",
     "packages": [
         {
             "name": "lox/pheasant",
-            "version": "dev-master",
+            "version": "v1.0.0-rc1",
             "source": {
                 "type": "git",
                 "url": "git://github.com/lox/pheasant.git",
-                "reference": "60bfda43bcd977c59734cae57143ebeaa93894cb"
+                "reference": "v1.0.0-rc1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/lox/pheasant/archive/60bfda43bcd977c59734cae57143ebeaa93894cb.zip",
-                "reference": "60bfda43bcd977c59734cae57143ebeaa93894cb",
+                "url": "https://github.com/lox/pheasant/archive/v1.0.0-rc1.zip",
+                "reference": "v1.0.0-rc1",
                 "shasum": ""
             },
             "require": {
@@ -22,9 +22,9 @@
                 "phpunit/phpunit": "3.7.*",
                 "mockery/mockery": "dev-master"
             },
-            "time": "1353565069",
+            "time": "2012-11-22 06:17:49",
             "type": "library",
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "psr-0": {
                     "Pheasant": [
@@ -73,7 +73,16 @@
                     "adodb.inc.php",
                     "adodb-exceptions.inc.php"
                 ]
-            }
+            },
+            "license": [
+                "BSD-4-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "John Lim",
+                    "email": "jlim@natsoft.com.my"
+                }
+            ]
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -479,6 +488,6 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "lox/pheasant": 20
+        "lox/pheasant": 5
     }
 }

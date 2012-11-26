@@ -15,10 +15,10 @@ class Exception extends \Exception
             case 'EXECUTE':
                 $this->sql = $p1;
                 $this->params = $p2;
-                $s = "$dbms error: [$errno: $errmsg] in $fn(\"$p1\")\n";
+                $s = sprintf('%s error: [%s: %s] in %s(%s)', $dbms, $errno, $errmsg, $fn, var_export($p1, true));
                 break;
             default:
-                $s = "$dbms error: [$errno: $errmsg] in $fn($p1, $p2)\n";
+                $s = sprintf('%s error: [%s: %s] in %s(%s, %s)', $dbms, $errno, $errmsg, $fn, var_export($p1, true), var_export($p2, true));
                 break;
         }
 

@@ -233,15 +233,23 @@ class ConnectionTest extends PheasantAdodbTestCase
         $this->assertEquals($adoResult, $phaResult);
 
         // already quoted string
-        /*
-        $adoResult = $this->adoConnection->Replace('user', array('userid' => 300, 'firstname' => '\'quoted\''), 'userid', true);
-        $phaResult = $this->phaConnection->Replace('user', array('userid' => 300, 'firstname' => '\'quoted\''), 'userid', true);
+        $adoResult = $this->adoConnection->Replace('user', array('userid' => 300, 'firstname' => 'quoted\''), 'userid', true);
+        $phaResult = $this->phaConnection->Replace('user', array('userid' => 300, 'firstname' => 'quoted\''), 'userid', true);
         $this->assertEquals($adoResult, $phaResult);
         $sql = "SELECT * FROM user WHERE userid = 300";
         $adoResult = $this->adoConnection->GetAll($sql);
         $phaResult = $this->phaConnection->GetAll($sql);
         $this->assertEquals($adoResult, $phaResult);
-        */
+
+        // already quoted string - adodb breaks
+        //$adoResult = $this->adoConnection->Replace('user', array('userid' => 300, 'firstname' => '\'quoted\''), 'userid', true);
+        $phaResult = $this->phaConnection->Replace('user', array('userid' => 301, 'firstname' => '\'quoted\''), 'userid', true);
+        //$this->assertEquals($adoResult, $phaResult);
+        $sql = "SELECT * FROM user WHERE userid = 301";
+        //$adoResult = $this->adoConnection->GetRow($sql);
+        $phaResult = $this->phaConnection->GetRow($sql);
+        //$this->assertEquals($adoResult, $phaResult);  // this is clearly a bug in adodb
+        $this->assertEquals('\'quoted\'', $phaResult['firstname']);
     }
 
     public function testQuote()
@@ -335,40 +343,41 @@ class ConnectionTest extends PheasantAdodbTestCase
 
     public function testTransactionRollback()
     {
-        // ADOdb is flipping out with PHP 5.3.10, can't compare results
 
-        //$this->adoConnection->StartTrans();
+        $this->adoConnection->StartTrans();
         $this->phaConnection->StartTrans();
 
         $data = array('firstname'=>'testTransactionRollback','lastname'=>'testTransactionRollback');
-        //$adoResult = $this->adoConnection->AutoExecute('user', $data, 'INSERT');
+        $adoResult = $this->adoConnection->AutoExecute('user', $data, 'INSERT');
         $phaResult = $this->phaConnection->AutoExecute('user', $data, 'INSERT');
-        //$this->assertEquals($adoResult, $phaResult);
+        $this->assertEquals($adoResult, $phaResult);
 
         $exceptionCaught = false;
         try {
-            //$adoResult = $this->adoConnection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
             $phaResult = $this->phaConnection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
-            //$this->assertEquals($adoResult, $phaResult);
-            //$this->assertFalse($phaResult);
         } catch (\PheasantAdodb\Exception $e) {
             $exceptionCaught = true;
         }
-        //catch (\ADODB_Exception $e)
-        //{
-        //  $exceptionCaught = true;
-        //}
+        try {
+            $adoResult = $this->adoConnection->AutoExecute('user', $data, 'UPDATE', 'nonexistant=12345');
+        }
+        catch (\ADODB_Exception $e) {
+            $adoExceptionCaught = true;
+        }
+        $this->assertEquals($adoResult, $phaResult);
 
         if (!$exceptionCaught)
             $this->fail("Exception not thrown");
+        if (!$adoExceptionCaught)
+            $this->fail("ADO Exception not thrown");
 
-        //$adoResult = $this->phaConnection->HasFailedTrans();
+        $adoResult = $this->phaConnection->HasFailedTrans();
         $phaResult = $this->phaConnection->HasFailedTrans();
-        $this->assertTrue(true, $phaResult);
+        $this->assertTrue($adoResult, $phaResult);
 
-        //$adoResult = $this->adoConnection->CompleteTrans();
+        $adoResult = $this->adoConnection->CompleteTrans();
         $phaResult = $this->phaConnection->CompleteTrans();
-        //$this->assertEquals($adoResult, $phaResult);
+        $this->assertEquals($adoResult, $phaResult);
         $this->assertFalse($phaResult);
     }
 }
