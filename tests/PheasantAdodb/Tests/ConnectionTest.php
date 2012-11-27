@@ -37,18 +37,27 @@ class ConnectionTest extends PheasantAdodbTestCase
         $this->assertEquals(1, array_pop($phaRow));
     }
 
-    public function testExecuteBinding2()
+    public function testExecuteBinding2a()
     {
         $sql = "SELECT COUNT(*) FROM user WHERE lastname=?";
         $adoResult = $this->adoConnection->Execute($sql, array('Castle', 'extra'));
+        $this->setExpectedException('PHPUnit_Framework_Error_Warning');
         $phaResult = $this->phaConnection->Execute($sql, array('Castle', 'extra'));
-
+    }
+    public function testExecuteBinding2b()
+    {
+        // now do the same thing with warnings disabled
+        \PHPUnit_Framework_Error_Warning::$enabled = FALSE;
+        $sql = "SELECT COUNT(*) FROM user WHERE lastname=?";
+        $adoResult = $this->adoConnection->Execute($sql, array('Castle', 'extra'));
+        $phaResult = $this->phaConnection->Execute($sql, array('Castle', 'extra'));
         $this->assertEquals('PheasantAdodb\RecordSet', get_class($phaResult));
 
         $adoRow = $adoResult->FetchRow();
         $phaRow = $phaResult->FetchRow();
         //$this->assertEquals($adoRow, $phaRow); // adodb 4.81 appending 'extra' to the end of the sql
         $this->assertEquals(1, array_pop($phaRow));
+        \PHPUnit_Framework_Error_Warning::$enabled = TRUE;
     }
 
     public function testQuery()

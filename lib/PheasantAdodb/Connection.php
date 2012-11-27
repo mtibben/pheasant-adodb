@@ -502,7 +502,10 @@ class Connection
             $sql = $this->_connection->binder()->bind($sql, $inputarr);
             $inputarr = array();
         } catch (\Exception $e) {
-            if (preg_match('/Parameters left over/', $e->getMessage())) {
+            // For "Parameters left over" exception,
+            // we log and truncate array to match adodb behavior
+            if (preg_match('/Parameters left over/', $e->getMessage()) && !empty($e->leftOverParams)) {
+                trigger_error((string)$e, E_USER_WARNING);
                 $inputarr = array_slice($inputarr, 0, 0-count($e->leftOverParams));
             } else {
                 $this->_raiseError('EXECUTE', $e->getCode(), $e->getMessage(), $sql, $inputarr);
