@@ -332,6 +332,25 @@ class ConnectionTest extends PheasantAdodbTestCase
         $phaResult = $this->phaConnection->GetAll('SELECT * FROM user WHERE userid = ?', array(201));
         $this->assertEquals($adoResult, $phaResult);
     }
+    public function testAutoExecuteInsertExisting()
+    {
+        // try to insert on an existing column
+        $data = array('userid'=>2002, 'firstname'=>'testAutoExecuteInsertExisting','lastname'=>'testAutoExecuteInsertExisting');
+        $adoResult = $this->adoConnection->AutoExecute('user', $data, 'INSERT');
+        $phaResult = $this->phaConnection->AutoExecute('user', $data, 'INSERT');
+        $this->assertEquals($adoResult, $phaResult);
+
+        try {
+            $adoResult = $this->adoConnection->AutoExecute('user', $data, 'INSERT');
+        } catch (\Exception $adoException) {}
+        try {
+            $phaResult = $this->phaConnection->AutoExecute('user', $data, 'INSERT');
+        } catch (\Exception $phaException) {}
+
+        $expectedMsg = '/Duplicate entry/';
+        $this->assertTrue((bool)preg_match($expectedMsg, $adoException->getMessage()));
+        $this->assertTrue((bool)preg_match($expectedMsg, $phaException->getMessage()));
+    }
 
     public function testTransaction()
     {
