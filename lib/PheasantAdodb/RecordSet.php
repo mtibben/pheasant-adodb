@@ -145,6 +145,11 @@ class RecordSet implements \Iterator
         return $this->_numOfRows;
     }
 
+    public function RowCount()
+    {
+        return $this->RecordCount();
+    }
+
     /**
      * Move to the first row in the recordset. Many databases do NOT support this.
      *
