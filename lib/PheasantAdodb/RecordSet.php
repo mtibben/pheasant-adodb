@@ -296,4 +296,9 @@ class RecordSet implements \Iterator
 
         return $results;
     }
+
+    public function getResultSet()
+    {
+        return $this->_resultSet;
+    }
 }

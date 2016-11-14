@@ -54,4 +54,4 @@ phpunit
 ```
 
 
-[![Build Status](https://api.travis-ci.org/99designs/pheasant-adodb.png)](https://travis-ci.org/99designs/pheasant-adodb)
+[![Build Status](https://api.travis-ci.org/mtibben/pheasant-adodb.png)](https://travis-ci.org/99designs/pheasant-adodb)

@@ -1,12 +1,12 @@
 {
-    "name": "99designs/pheasant-adodb",
+    "name": "mtibben/pheasant-adodb",
     "description": "A subset of the ADOdb API on Pheasant",
-    "keywords": ["datamapper", "orm", "activerecord", "mysql", "99designs", "adodb", "pheasant"],
+    "keywords": ["datamapper", "orm", "activerecord", "mysql", "adodb", "pheasant"],
     "license": "BSD-4-Clause",
     "authors": [
         { "name": "Michael Tibben", "email": "michael.tibben@gmail.com" }
     ],
-    "homepage": "http://github.com/99designs/pheasant-adodb",
+    "homepage": "http://github.com/mtibben/pheasant-adodb",
     "repositories": [
         {
             "type": "package",
